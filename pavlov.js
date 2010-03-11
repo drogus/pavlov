@@ -190,16 +190,16 @@
         isNotEqualTo: function(actual, expected, message) {
             specify.assert(actual != expected, message);
         },
-        isSameAs: function(actual, expected, message) {  
+        isSameAs: function(actual, expected, message) {
             specify.assert(specify.equivalent(actual, expected), message);
         },
-        isNotSameAs: function(actual, expected, message) {            
+        isNotSameAs: function(actual, expected, message) {
             specify.assert(!specify.equivalent(actual, expected), message);
         },
-        isTrue: function(actual, message) {     
+        isTrue: function(actual, message) {
             specify.assert(actual, message);
         },
-        isFalse: function(actual, message) {            
+        isFalse: function(actual, message) {
             specify.assert(!actual, message);
         },
         isNull: function(actual, message) {
@@ -460,6 +460,7 @@
         }
         examples = [];
         currentExample = null;
+        specify.name = name;
 
         // set the test suite title
         document.title = name + " Specifications";
