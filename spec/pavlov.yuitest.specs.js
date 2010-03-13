@@ -168,7 +168,7 @@ YUI({combine: true, timeout: 10000}).use("node", "test",function (Y) {
                       // later, will verify the correct behavior happened with 1 arg.
                       it = function() {
                           if(arguments.length === 2) {
-                              args = $.makeArray(arguments);
+                              args = Array.prototype.slice.call(arguments);
                           } else {
                               originalIt.apply(this,arguments);
                           }
@@ -296,7 +296,7 @@ YUI({combine: true, timeout: 10000}).use("node", "test",function (Y) {
               var args = [];
               try {
                   pavlov.Y[method] = function(){
-                      args = $.makeArray(arguments);
+                      args = Array.prototype.slice.call(arguments);
                   };
                   scope();
               } finally {
@@ -364,7 +364,7 @@ YUI({combine: true, timeout: 10000}).use("node", "test",function (Y) {
                   var calls = [];
                   try {
                       pavlov.equiv = function(actual, expected) {
-                          calls.push($.makeArray(arguments));
+                          calls.push(Array.prototype.slice.call(arguments));
                           return true;
                       };
                       var passedArgs = mockYUITestAssertion('assert', function(){
@@ -690,10 +690,10 @@ YUI({combine: true, timeout: 10000}).use("node", "test",function (Y) {
                   var gtArgs, ltArgs;
                   pavlov.extendAssertions({
                       isGreaterThan: function(actual, expected, message) {
-                          gtArgs = $.makeArray(arguments);
+                          gtArgs = Array.prototype.slice.call(arguments);
                       },
                       isLessThan: function(actual, expected, message) {
-                          ltArgs = $.makeArray(arguments);
+                          ltArgs = Array.prototype.slice.call(arguments);
                       }
                   });
 
@@ -708,10 +708,10 @@ YUI({combine: true, timeout: 10000}).use("node", "test",function (Y) {
                   var purpleArgs, yellowArgs;
                   pavlov.extendAssertions({
                       isPurple: function(actual, message) {
-                          purpleArgs = $.makeArray(arguments);
+                          purpleArgs = Array.prototype.slice.call(arguments);
                       },
                       isYellow: function(actual, message) {
-                          yellowArgs = $.makeArray(arguments);
+                          yellowArgs = Array.prototype.slice.call(arguments);
                       }
                   });
 
