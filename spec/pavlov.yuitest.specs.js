@@ -1,6 +1,6 @@
 var standardYUITestRan = false;
 
-YUI({combine: true, timeout: 10000}).use("node", "console", "test",function (Y) {
+YUI({combine: true, timeout: 10000}).use("node", "test",function (Y) {
   pavlov.Y = Y;
 
   Y.namespace("example.test");
@@ -14,14 +14,6 @@ YUI({combine: true, timeout: 10000}).use("node", "console", "test",function (Y) 
 
   Y.example.test.ExampleSuite = new Y.Test.Suite("Example Suite");
   Y.example.test.ExampleSuite.add(Y.example.test.DataTestCase);
-
-  //create the console
-  var r = new Y.Console({
-      newestOnTop : false,
-      style: 'block'
-  });
-
-  r.render('#testLogger');
 
   Y.Test.Runner.add(Y.example.test.ExampleSuite);
   Y.Test.Runner.run();

@@ -45,7 +45,8 @@ pavlov.extend({
         var testCases = [],
             each = pavlov.helpers.each;
 
-        var suite = new Y.Test.Suite(this.name);
+        var name = this.name;
+        var suite = new Y.Test.Suite(name);
 
         /**
          * Comples a single example and its children into YUI Test test cases
@@ -59,7 +60,7 @@ pavlov.extend({
 
             // prepare template for test case
             var template = {
-              name: example.name,
+              name: example.names(),
               setUp:    function() {
                           each(befores, function(){ this(); });
                         },
@@ -92,12 +93,42 @@ pavlov.extend({
 
         // return a single function which, when called,
         // runs test suite
-        return function(){ 
+        return function(){
             each(testCases, function(){
               suite.add(this);
             });
 
             Y.Test.Runner.add(suite);
+
+            Y.Test.Runner.subscribe(Y.Test.Runner.BEGIN_EVENT, function() {
+              Y.one('#qunit-header').set("innerHTML", name + " Specifications");
+              Y.one('#qunit-userAgent').set("innerHTML", navigator.userAgent);
+            });
+
+            Y.Test.Runner.subscribe(Y.Test.Runner.COMPLETE_EVENT, function(data) {
+              var results = data.results;
+              var message = "<p id=\"qunit-testresult\" class=\"result\">Tests completed in " +
+                            results.duration + " milliseconds. <br/>"
+
+              message += results.passed + " of " + results.total + " passed. " + results.failed + " failed.</p>"
+              message = Y.Node.create(message);
+              Y.Node.one("body").append(message);
+
+            });
+
+            function testOutput(data) {
+              var testName = data.testCase.name + " " + data.testName.replace(/^test: /, "");
+              testDescription = "<strong>" + testName + "</strong>";
+              if(data.type == "fail") {
+                testDescription += "<br/>" + data.error.getMessage() + "<br/>" + data.error.cause.fileName + ":" + data.error.cause.lineNumber;
+              }
+              var testResult = Y.Node.create("<li>" + testDescription + "</li>");
+              testResult.addClass(data.type);
+              Y.Node.one("#qunit-tests").append(testResult);
+            }
+
+            Y.Test.Runner.subscribe(Y.Test.Runner.TEST_FAIL_EVENT, testOutput);
+            Y.Test.Runner.subscribe(Y.Test.Runner.TEST_PASS_EVENT, testOutput);
             //run the tests
             Y.Test.Runner.run();
         };
