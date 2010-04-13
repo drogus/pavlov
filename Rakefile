@@ -6,8 +6,8 @@ require 'zip/zip'
 require 'find'
 require 'fileutils'
 include FileUtils
-  
-task :default => :test
+
+task :default => "test:qunit"
 
 # list of browsers to auto-bind to JsTestDrive Server
 # non-existent browsers will be ignored
@@ -32,43 +32,50 @@ task :build => [:clean] do
   # copy src
   cp 'pavlov.js', 'dist/pavlov.js'
   cp 'pavlov.qunit.js', 'dist/pavlov.qunit.js'
-  
+  cp 'pavlov.yui3.js', 'dist/pavlov.yui3.js'
+  cp 'pavlov.yui2.js', 'dist/pavlov.yui2.js'
+
   # copy documentation
   cp 'README.markdown', 'dist/README.markdown'
 
   # copy lib
   cp 'lib/qunit.js', 'dist/lib/qunit.js'
   cp 'lib/qunit.css', 'dist/lib/qunit.css'
-  cp 'spec/lib/jquery/GPL-LICENSE.txt', 'dist/lib/GPL-LICENSE.txt'
-  cp 'spec/lib/jquery/MIT-LICENSE.txt', 'dist/lib/MIT-LICENSE.txt'
-  
+
   # copy example
-  cp 'example/example.specs.html', 'dist/example/example.specs.html'
+  cp 'example/example.specs.qunit.html', 'dist/example/example.specs.qunit.html'
+  cp 'example/example.specs.yui3.html', 'dist/example/example.specs.yui3.html'
+  cp 'example/example.specs.yui2.html', 'dist/example/example.specs.yui2.html'
   cp 'example/example.specs.js', 'dist/example/example.specs.js'
 
-  
+  # minify 
+  minify('dist/pavlov.js')  
+  minify('dist/pavlov.qunit.js')
+  minify('dist/pavlov.yui3.js')
+  minify('dist/pavlov.yui2.js')
+end
+
+def minify(file)
   # minify src
-  source = File.read('dist/pavlov.js')
+  source = File.read(file)
   minified = Packr.pack(source, :shrink_vars => true, :base62 => false)
   header = /\/\*.*?\*\//m.match(source)
 
   # inject header
-  File.open('dist/pavlov.min.js', 'w') do |combined|
+  File.open(file.slice(0, file.length - 3) + '.min.js', 'w') do |combined|
     combined.puts(header)
-    combined.write(minified)  
+    combined.write(minified)
   end
-  
-  # minify src
-  source = File.read('dist/pavlov.qunit.js')
-  minified = Packr.pack(source, :shrink_vars => true, :base62 => false)
-  header = /\/\*.*?\*\//m.match(source)
+end
 
-  # inject header
-  File.open('dist/pavlov.qunit.min.js', 'w') do |combined|
-    combined.puts(header)
-    combined.write(minified)  
-  end
-  
+def browse(path)
+  begin
+    # mac
+    sh("open #{path}")
+  rescue
+    # windows
+    sh("start #{path}")
+  end  
 end
 
 desc "Generates a releasable zip archive"
@@ -81,23 +88,43 @@ task :release => [:build] do
       Find.prune if File.basename(path)[0] == ?.
       dest = /dist\/(\w.*)/.match(path)
       zip.add(dest[1],path) if dest
-    end 
-  end    
-end
-
-
-
-desc "Run the tests in default browser"
-task :test => [:build] do  
-  begin
-    # mac
-    sh("open spec/pavlov.specs.html")
-  rescue
-    # windows
-    sh("start spec/pavlov.specs.html")
+    end
   end
 end
 
+namespace :example do
+  desc "Run the qunit example in default browser"
+  task :qunit => [:build] do
+    browse "example/example.specs.qunit.html"
+  end
+
+  desc "Run the yui3 example in default browser"
+  task :yui3 => [:build] do
+    browse "example/example.specs.yui3.html"
+  end  
+
+  desc "Run the yui2 example in default browser"
+  task :yui2 => [:build] do
+    browse "example/example.specs.yui2.html"
+  end  
+end
+
+namespace :test do 
+  desc "Run the qunit tests in default browser"
+  task :qunit => [:build] do
+    browse "spec/pavlov.specs.qunit.html" 
+  end
+
+  desc "Run the yui3 tests in default browser"
+  task :yui3 => [:build] do
+    browse "spec/pavlov.specs.yui3.html"
+
+  end
+  desc "Run the yui2 tests in default browser"
+  task :yui2 => [:build] do
+    browse "spec/pavlov.specs.yui2.html"
+  end
+end
 
 desc "Run the tests against JsTestDriver"
 task :testdrive => [:build] do
@@ -130,4 +157,4 @@ end
 # clean deletes built copies
 CLEAN.include('dist/')
 # clobber cleans and uninstalls JsTestDriver server
-CLOBBER.include('spec/lib/js-test-driver/*.jar')  
+CLOBBER.include('spec/lib/js-test-driver/*.jar')
